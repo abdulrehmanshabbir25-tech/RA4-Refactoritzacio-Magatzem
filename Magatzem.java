@@ -1,7 +1,7 @@
 /**
- * CODI REFACTORITZAT - COMMIT 3
- * Patró aplicat: Guard Clauses (Clàusules de Guarda).
- * S'aïllen els casos especials al principi del bucle per eliminar niuaments.
+ * CODI REFACTORITZAT - COMMIT 4
+ * Patró aplicat: Extract Method (Extracció de Mètodes).
+ * S'extreu la lògica de caducitat a un mètode privat per alleugerir el bucle principal.
  */
 class Magatzem {
     Article[] articles;
@@ -18,14 +18,12 @@ class Magatzem {
     public void actualitzarEstat() {
         for (int i = 0; i < articles.length; i++) {
             
-            // PATRÓ: Clàusula de Guarda (Guard Clause)
-            // Si és el Martell de Thor, no canvia mai de qualitat ni de dies.
-            // Passem directament al següent article del magatzem, evitant comprovar la resta de 'ifs'.
+            // Clàusula de Guarda (Commit 3)
             if (articles[i].nom.equals("Martell de Thor (Llegendari)")) {
                 continue; 
             }
 
-            // Flux principal (ja lliure de la condició del Martell de Thor)
+            // Lògica de canvi de qualitat inicial
             if (!articles[i].nom.equals("Formatge Gidurat")
                     && !articles[i].nom.equals("Entrades per al Concert del Trobador")) {
                 if (articles[i].qualitat > QUALITAT_MINIMA) {
@@ -51,23 +49,31 @@ class Magatzem {
                 }
             }
 
-            // Reduïm els dies per vendre (ja sabem segur que no és el Martell)
+            // Reduïm els dies per vendre
             articles[i].diesPerVendre = articles[i].diesPerVendre - 1;
 
+            // PATRÓ: Extract Method
+            // Si l'article ha caducat, deleguem la feina al nou mètode especialitzat
             if (articles[i].diesPerVendre < 0) {
-                if (!articles[i].nom.equals("Formatge Gidurat")) {
-                    if (!articles[i].nom.equals("Entrades per al Concert del Trobador")) {
-                        if (articles[i].qualitat > QUALITAT_MINIMA) {
-                            articles[i].qualitat = articles[i].qualitat - 1;
-                        }
-                    } else {
-                        articles[i].qualitat = articles[i].qualitat - articles[i].qualitat;
-                    }
-                } else {
-                    if (articles[i].qualitat < MAX_QUALITAT) {
-                        articles[i].qualitat = articles[i].qualitat + 1;
-                    }
+                gestionarCaducitat(articles[i]);
+            }
+        }
+    }
+
+    // NOU MÈTODE EXTRAÏT (Extract Method)
+    // En lloc de sobrecarregar el mètode principal, aquest mètode només s'encarrega de la caducitat
+    private void gestionarCaducitat(Article article) {
+        if (!article.nom.equals("Formatge Gidurat")) {
+            if (!article.nom.equals("Entrades per al Concert del Trobador")) {
+                if (article.qualitat > QUALITAT_MINIMA) {
+                    article.qualitat = article.qualitat - 1;
                 }
+            } else {
+                article.qualitat = article.qualitat - article.qualitat;
+            }
+        } else {
+            if (article.qualitat < MAX_QUALITAT) {
+                article.qualitat = article.qualitat + 1;
             }
         }
     }
