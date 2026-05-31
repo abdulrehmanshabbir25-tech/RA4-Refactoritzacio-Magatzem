@@ -1,7 +1,8 @@
 /**
- * CODI REFACTORITZAT - COMMIT 5
- * Patró aplicat: Consolidate Conditional Expression.
- * S'agrupen i simplifiquen les condicions de caducitat en una sola línia lògica.
+ * CODI REFACTORITZAT - COMMIT 6
+ * Patró aplicat: Decompose Conditional.
+ * S'extreu la condició complexa de l'if, el bloc 'then' i el bloc 'else' 
+ * en mètodes separats segons especifica el PDF de l'assignatura.
  */
 class Magatzem {
     Article[] articles;
@@ -23,54 +24,64 @@ class Magatzem {
                 continue; 
             }
 
-            // Lògica de qualitat inicial
-            if (!articles[i].nom.equals("Formatge Gidurat")
-                    && !articles[i].nom.equals("Entrades per al Concert del Trobador")) {
-                if (articles[i].qualitat > QUALITAT_MINIMA) {
-                    articles[i].qualitat = articles[i].qualitat - 1;
-                }
+            // PATRÓ: Decompose Conditional
+            // Substituïm l'if complex per mètodes separats (condició, then, else)
+            if (esArticleEstandard(articles[i])) {
+                disminuirQualitatEstandard(articles[i]); // Bloc Then
             } else {
-                if (articles[i].qualitat < MAX_QUALITAT) {
-                    articles[i].qualitat = articles[i].qualitat + 1;
-
-                    if (articles[i].nom.equals("Entrades per al Concert del Trobador")) {
-                        if (articles[i].diesPerVendre < LIMIT_DIES_URGENT) {
-                            if (articles[i].qualitat < MAX_QUALITAT) {
-                                articles[i].qualitat = articles[i].qualitat + 1;
-                            }
-                        }
-
-                        if (articles[i].diesPerVendre < LIMIT_DIES_CRITIC) {
-                            if (articles[i].qualitat < MAX_QUALITAT) {
-                                articles[i].qualitat = articles[i].qualitat + 1;
-                            }
-                        }
-                    }
-                }
+                aumentarQualitatEspecials(articles[i]); // Bloc Else
             }
 
             // Reduïm els dies per vendre
             articles[i].diesPerVendre = articles[i].diesPerVendre - 1;
 
-            // Mètode extraït anteriorment (Commit 4)
+            // Gestionar caducitat (Commit 4 i 5)
             if (articles[i].diesPerVendre < 0) {
                 gestionarCaducitat(articles[i]);
             }
         }
     }
 
-    // MÈTODE CORREGIT AMB: Consolidate Conditional Expression
+    // 1. PARTS EXTRETES DEL PATRÓ: Decompose Conditional
+
+    // Mètode per a la Condició (if)
+    private boolean esArticleEstandard(Article article) {
+        return !article.nom.equals("Formatge Gidurat")
+                && !article.nom.equals("Entrades per al Concert del Trobador");
+    }
+
+    // Mètode per al bloc THEN
+    private void disminuirQualitatEstandard(Article article) {
+        if (article.qualitat > QUALITAT_MINIMA) {
+            article.qualitat = article.qualitat - 1;
+        }
+    }
+
+    // Mètode per al bloc ELSE
+    private void aumentarQualitatEspecials(Article article) {
+        if (article.qualitat < MAX_QUALITAT) {
+            article.qualitat = article.qualitat + 1;
+
+            if (article.nom.equals("Entrades per al Concert del Trobador")) {
+                if (article.diesPerVendre < LIMIT_DIES_URGENT && article.qualitat < MAX_QUALITAT) {
+                    article.qualitat = article.qualitat + 1;
+                }
+                if (article.diesPerVendre < LIMIT_DIES_CRITIC && article.qualitat < MAX_QUALITAT) {
+                    article.qualitat = article.qualitat + 1;
+                }
+            }
+        }
+    }
+
+    // Mètode de caducitat (Commit 5)
     private void gestionarCaducitat(Article article) {
         if (article.nom.equals("Formatge Gidurat")) {
             if (article.qualitat < MAX_QUALITAT) {
                 article.qualitat = article.qualitat + 1;
             }
         } else if (article.nom.equals("Entrades per al Concert del Trobador")) {
-            // Simplificació directa: passar la qualitat a 0 (qualitat - qualitat = 0)
             article.qualitat = 0;
         } else {
-            // PATRÓ: Consolidate Conditional Expression
-            // Agrupem aquí qualsevol altre article normal que mantingui qualitat per sobre del mínim
             if (article.qualitat > QUALITAT_MINIMA) {
                 article.qualitat = article.qualitat - 1;
             }
