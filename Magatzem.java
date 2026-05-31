@@ -1,8 +1,7 @@
 /**
- * CODI REFACTORITZAT - COMMIT 7
- * Patró aplicat: Consolidate Duplicate Conditional Fragments.
- * Es mou el fragment de codi repetit (comprovació de MAX_QUALITAT) fora
- * dels blocs condicionals de les entrades per evitar codi duplicat.
+ * CODI REFACTORITZAT - COMMIT 8
+ * Adaptació al patró Encapsulate Field.
+ * Totes les consultes i modificacions d'atributs de l'article ara es fan mitjançant getters i setters.
  */
 class Magatzem {
     Article[] articles;
@@ -19,71 +18,63 @@ class Magatzem {
     public void actualitzarEstat() {
         for (int i = 0; i < articles.length; i++) {
             
-            // Clàusula de Guarda (Commit 3)
-            if (articles[i].nom.equals("Martell de Thor (Llegendari)")) {
+            if (articles[i].getNom().equals("Martell de Thor (Llegendari)")) {
                 continue; 
             }
 
-            // Decompose Conditional (Commit 6)
             if (esArticleEstandard(articles[i])) {
                 disminuirQualitatEstandard(articles[i]);
             } else {
                 aumentarQualitatEspecials(articles[i]);
             }
 
-            // Reduïm els dies per vendre
-            articles[i].diesPerVendre = articles[i].diesPerVendre - 1;
+            // Ús de Getter i Setter per als dies
+            articles[i].setDiesPerVendre(articles[i].getDiesPerVendre() - 1);
 
-            // Gestionar caducitat (Commit 4 i 5)
-            if (articles[i].diesPerVendre < 0) {
+            if (articles[i].getDiesPerVendre() < 0) {
                 gestionarCaducitat(articles[i]);
             }
         }
     }
 
     private boolean esArticleEstandard(Article article) {
-        return !article.nom.equals("Formatge Gidurat")
-                && !article.nom.equals("Entrades per al Concert del Trobador");
+        return !article.getNom().equals("Formatge Gidurat")
+                && !article.getNom().equals("Entrades per al Concert del Trobador");
     }
 
     private void disminuirQualitatEstandard(Article article) {
-        if (article.qualitat > QUALITAT_MINIMA) {
-            article.qualitat = article.qualitat - 1;
+        if (article.getQualitat() > QUALITAT_MINIMA) {
+            article.setQualitat(article.getQualitat() - 1);
         }
     }
 
-    // MÈTODE REFACTORITZAT AMB: Consolidate Duplicate Conditional Fragments
     private void aumentarQualitatEspecials(Article article) {
-        if (article.qualitat >= MAX_QUALITAT) {
-            return; // Si ja està al màxim, sortim i evitem duplicar el control a sota
+        if (article.getQualitat() >= MAX_QUALITAT) {
+            return; 
         }
 
-        // Augment bàsic per ser article especial (Formatge o Entrades)
-        article.qualitat = article.qualitat + 1;
+        article.setQualitat(article.getQualitat() + 1);
 
-        // PATRÓ: Consolidate Duplicate Conditional Fragments
-        // Com que hem extret el control de MAX_QUALITAT a l'inici, els fragments de dins
-        // queden completament nets de duplicacions d'aquest control
-        if (article.nom.equals("Entrades per al Concert del Trobador")) {
-            if (article.diesPerVendre < LIMIT_DIES_URGENT && article.qualitat < MAX_QUALITAT) {
-                article.qualitat = article.qualitat + 1;
+        if (article.getNom().equals("Entrades per al Concert del Trobador")) {
+            if (article.getDiesPerVendre() < LIMIT_DIES_URGENT && article.getQualitat() < MAX_QUALITAT) {
+                article.setQualitat(article.getQualitat() + 1);
             }
-            if (article.diesPerVendre < LIMIT_DIES_CRITIC && article.qualitat < MAX_QUALITAT) {
-                article.qualitat = article.qualitat + 1;
+            if (article.getDiesPerVendre() < LIMIT_DIES_CRITIC && article.getQualitat() < MAX_QUALITAT) {
+                article.setQualitat(article.getQualitat() + 1);
             }
         }
     }
 
     private void gestionarCaducitat(Article article) {
-        if (article.nom.equals("Formatge Gidurat")) {
-            if (article.qualitat < MAX_QUALITAT) {
-                article.qualitat = article.qualitat + 1;
+        if (article.getNom().equals("Formatge Gidurat")) {
+            if (article.getQualitat() < MAX_QUALITAT) {
+                article.setQualitat(article.getQualitat() + 1);
             }
-        } else if (article.nom.equals("Entrades per al Concert del Trobador")) {
-            article.qualitat = 0;
+        } else if (article.getNom().equals("Entrades per al Concert del Trobador")) {
+            article.setQualitat(0);
         } else {
-            if (article.qualitat > QUALITAT_MINIMA) {
-                article.qualitat = article.qualitat - 1;
+            if (article.getQualitat() > QUALITAT_MINIMA) {
+                article.setQualitat(article.getQualitat() - 1);
             }
         }
     }
