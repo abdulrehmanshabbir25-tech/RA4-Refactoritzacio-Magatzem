@@ -1,8 +1,8 @@
 /**
- * CODI REFACTORITZAT - COMMIT 6
- * Patró aplicat: Decompose Conditional.
- * S'extreu la condició complexa de l'if, el bloc 'then' i el bloc 'else' 
- * en mètodes separats segons especifica el PDF de l'assignatura.
+ * CODI REFACTORITZAT - COMMIT 7
+ * Patró aplicat: Consolidate Duplicate Conditional Fragments.
+ * Es mou el fragment de codi repetit (comprovació de MAX_QUALITAT) fora
+ * dels blocs condicionals de les entrades per evitar codi duplicat.
  */
 class Magatzem {
     Article[] articles;
@@ -24,12 +24,11 @@ class Magatzem {
                 continue; 
             }
 
-            // PATRÓ: Decompose Conditional
-            // Substituïm l'if complex per mètodes separats (condició, then, else)
+            // Decompose Conditional (Commit 6)
             if (esArticleEstandard(articles[i])) {
-                disminuirQualitatEstandard(articles[i]); // Bloc Then
+                disminuirQualitatEstandard(articles[i]);
             } else {
-                aumentarQualitatEspecials(articles[i]); // Bloc Else
+                aumentarQualitatEspecials(articles[i]);
             }
 
             // Reduïm els dies per vendre
@@ -42,38 +41,39 @@ class Magatzem {
         }
     }
 
-    // 1. PARTS EXTRETES DEL PATRÓ: Decompose Conditional
-
-    // Mètode per a la Condició (if)
     private boolean esArticleEstandard(Article article) {
         return !article.nom.equals("Formatge Gidurat")
                 && !article.nom.equals("Entrades per al Concert del Trobador");
     }
 
-    // Mètode per al bloc THEN
     private void disminuirQualitatEstandard(Article article) {
         if (article.qualitat > QUALITAT_MINIMA) {
             article.qualitat = article.qualitat - 1;
         }
     }
 
-    // Mètode per al bloc ELSE
+    // MÈTODE REFACTORITZAT AMB: Consolidate Duplicate Conditional Fragments
     private void aumentarQualitatEspecials(Article article) {
-        if (article.qualitat < MAX_QUALITAT) {
-            article.qualitat = article.qualitat + 1;
+        if (article.qualitat >= MAX_QUALITAT) {
+            return; // Si ja està al màxim, sortim i evitem duplicar el control a sota
+        }
 
-            if (article.nom.equals("Entrades per al Concert del Trobador")) {
-                if (article.diesPerVendre < LIMIT_DIES_URGENT && article.qualitat < MAX_QUALITAT) {
-                    article.qualitat = article.qualitat + 1;
-                }
-                if (article.diesPerVendre < LIMIT_DIES_CRITIC && article.qualitat < MAX_QUALITAT) {
-                    article.qualitat = article.qualitat + 1;
-                }
+        // Augment bàsic per ser article especial (Formatge o Entrades)
+        article.qualitat = article.qualitat + 1;
+
+        // PATRÓ: Consolidate Duplicate Conditional Fragments
+        // Com que hem extret el control de MAX_QUALITAT a l'inici, els fragments de dins
+        // queden completament nets de duplicacions d'aquest control
+        if (article.nom.equals("Entrades per al Concert del Trobador")) {
+            if (article.diesPerVendre < LIMIT_DIES_URGENT && article.qualitat < MAX_QUALITAT) {
+                article.qualitat = article.qualitat + 1;
+            }
+            if (article.diesPerVendre < LIMIT_DIES_CRITIC && article.qualitat < MAX_QUALITAT) {
+                article.qualitat = article.qualitat + 1;
             }
         }
     }
 
-    // Mètode de caducitat (Commit 5)
     private void gestionarCaducitat(Article article) {
         if (article.nom.equals("Formatge Gidurat")) {
             if (article.qualitat < MAX_QUALITAT) {
